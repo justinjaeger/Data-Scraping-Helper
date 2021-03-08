@@ -48,7 +48,7 @@ const scrape = async () => {
   browser.close();
 
   // Store output ((null, 2) argument is for readability purposes)
-  fs.writeFile('covid-19.json', JSON.stringify(recordList, null, 2), err => {
+  fs.writeFile('output/covid-19.json', JSON.stringify(recordList, null, 2), err => {
     if(err){console.log(err)}
     else{console.log('Saved Successfully!')}
   });
