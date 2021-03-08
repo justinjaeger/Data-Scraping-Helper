@@ -3,8 +3,8 @@ const covid = require('./covid-19.json');
 
 // API provides FULL ACCESS to do all operations
 // Consider createing a read-only one down the road if sharing it
-const AIRTABLE_API_KEY = 'keyZeq5ossKgSfrSI';
-const TEST_BASE_ID = 'appWT4nZ9YG4uDKqD';
+const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
+const TEST_BASE_ID = process.env.TEST_BASE_ID;
 
 const base = new Airtable({ apiKey: AIRTABLE_API_KEY }).base(TEST_BASE_ID);
 
@@ -13,7 +13,7 @@ const base = new Airtable({ apiKey: AIRTABLE_API_KEY }).base(TEST_BASE_ID);
 // https://airtable.com/appWT4nZ9YG4uDKqD/api/docs#javascript/table:table%201:list
 const selectTable = new Promise((resolve, reject) => {
   const output = [];
-  base('Table 1')
+  base('Nominees')
     .select({
       // maxRecords: 2,
       view: "Grid view"
