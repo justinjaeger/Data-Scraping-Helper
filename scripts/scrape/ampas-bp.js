@@ -22,8 +22,8 @@ const scrape = async () => {
       // loop through each row
       rows.forEach(row => {
         // return if row is header
-        if (row.querySelector('tr th')) return
-        // change year and return if row is year
+        if (row.querySelector('tr th')) { return; }
+        // change year and return if row is a year
         else if (row.querySelector('tr td[rowspan]')) {
           year = row.querySelector('tr td b a').innerHTML;
           if (year.length > 4) {
@@ -33,29 +33,41 @@ const scrape = async () => {
         } 
         else {
           const record = {
-            'Year': year,
-            'Film': '',
-            // 'Producer(s)': '',
-            'Winner': false,
+            'fields': {
+              'AwardsShow': 'AMPAS',
+              'Year': year,
+              'Category': 'Best Picture',
+              'Film': null,
+              'Nominee': null,
+              'Winner': null
+            }
           };
           let columns = Array.from(row.querySelectorAll('tr td'));
-          record['Film'] = columns[0].innerText;
-          // record['Producer(s)'] = columns[1].innerText;
-          record['Winner'] = row.matches('tr[style*="background:#FAEB86"]');
-          rowList.push(record);
+          record.fields['Film'] = columns[0].innerText;
+          record.fields['Winner'] = row.matches('tr[style*="background:#FAEB86"]') ? 'true' : 'false';
+          // Determine how many nominees there are and push a record per nominee
+          // separate by ' and ' and ', '
+          let producers = columns[1].innerText;
+          let nominees = producers.split(/, and | and |, /);
+          nominees.forEach(nominee => {
+            record.fields['Nominee'] = nominee;
+            // deep clone the object
+            const deepClone = JSON.parse(JSON.stringify(record));
+            rowList.push(deepClone);
+          })
         };
       })
     })
     return rowList;
   });
+
   browser.close();
 
   // Store output ((null, 2) argument is for readability purposes)
-  fs.writeFile('output/AMPAS-BestPicture.json', JSON.stringify(recordList, null, 2), err => {
+  fs.writeFile('output/AMPAS_BP.json', JSON.stringify(recordList, null, 2), err => {
     if(err){console.log(err)}
     else{console.log('Saved Successfully!')}
   });
 };  
-  // browser.close();
 
-scrape();
+module.exports = scrape;

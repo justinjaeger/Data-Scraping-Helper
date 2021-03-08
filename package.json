@@ -9,6 +9,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "airtable": "^0.10.1",
+    "dotenv": "^8.2.0",
     "fs": "0.0.1-security",
     "puppeteer": "^8.0.0"
   }
