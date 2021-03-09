@@ -1,7 +1,7 @@
 const InsertionScript = require('./scripts/InsertionScript');
 
 const scripts = {
-  AMPAS_BP: () => InsertionScript(require('./output/AMPAS_BP.json')),
+  AMPAS_BP: () => InsertionScript(require('./outputs/AMPAS_BP.json')),
 };
 
 const runAllScripts = () => {

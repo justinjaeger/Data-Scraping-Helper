@@ -1,7 +1,12 @@
 const puppeteer = require('puppeteer');
 const fs = require('fs')
 
-const scrape = async () => {
+/**
+ * Returns a promise that scrapes the AMPAS Best Picture Wiki page
+ * Outputs to AMPAS_BP.json
+ */
+
+const scrape = new Promise( async (resolve, reject) => {
   // browser initiate
   const browser = await puppeteer.launch({headless : false});
   // open a new blank page
@@ -65,9 +70,14 @@ const scrape = async () => {
 
   // Store output ((null, 2) argument is for readability purposes)
   fs.writeFile('outputs/AMPAS_BP.json', JSON.stringify(recordList, null, 2), err => {
-    if(err){console.log(err)}
-    else{console.log('Saved Successfully!')}
+    if(err){
+      console.log(err);
+      reject(err);
+    } else {
+      console.log('Saved Successfully!')
+      resolve('Saved Successfully!')
+    };
   });
-};  
+});  
 
 module.exports = scrape;
