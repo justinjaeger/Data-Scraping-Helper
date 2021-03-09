@@ -9,7 +9,7 @@ const fs = require('fs')
 
 const scrape = () => {
 
-  console.log('Scraping fresh data...');
+  console.log('Scraping fresh data for AMPAS_PICTURE...');
   
   return new Promise( async (resolve, reject) => {
     // browser initiate
@@ -47,6 +47,7 @@ const scrape = () => {
                 'AwardsShow': 'AMPAS',
                 'Year': year,
                 'Category': 'Best Picture',
+                'Specification': null,
                 'Film': null,
                 'Nominee': null,
                 'Winner': null
