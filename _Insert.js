@@ -1,14 +1,6 @@
+const refs = require('./__refs');
 const InsertionScript = require('./scripts/InsertionScript');
 
-const scripts = {
-  AMPAS_BP: () => InsertionScript(require('./outputs/AMPAS_BP.json')),
+module.exports = {
+  AMPAS_PICTURE: () => InsertionScript(refs.AMPAS_PICTURE.data).then(d=>console.log(d)).catch(e=>console.log(e)),
 };
-
-const runAllScripts = () => {
-  Object.values(scripts).forEach(async script => {
-    await script();
-  });
-};
-
-// runAllScripts();
-scripts.AMPAS_BP();

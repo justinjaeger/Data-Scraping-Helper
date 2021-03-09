@@ -1,16 +1,17 @@
-require('dotenv').config()
-const Airtable = require('airtable');
+const base = require('../base');
 
 /**
- * Exports a function that returns an array of record Ids
- * Takes a formula as an argument to instruct which records to grab
+ * Creates array of record IDs 
+ * Determines which ones to get via formula filter
+ * @param {String} formula 
+ * @returns {Promise}
  */
 
-// Create base with Airtable credentials
-const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(process.env.TEST_BASE_ID);
-
 // Create array of record IDs to delete
-const getRecordIds = (formula) => {
+module.exports = (formula) => {
+  
+  console.log('Getting record IDs...')
+  
   return new Promise( async (resolve, reject) => {
     const output = [];
     base('Nominees')
@@ -33,6 +34,3 @@ const getRecordIds = (formula) => {
       });
   });
 };
-
-module.exports = getRecordIds;
-

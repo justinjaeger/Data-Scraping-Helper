@@ -4,7 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "SCRAPE_ALL": "node -e 'require(\"./_All\").scrape()'",
+    "INSERT_ALL": "node -e 'require(\"./_All\").insert()'",
+    "UPDATE_ALL": "node -e 'require(\"./_All\").update()'",
+    "DELETE_ALL": "node -e 'require(\"./_All\").delete()'",
+    "AMPAS_PICTURE_SCRAPE": "node -e 'require(\"./_Scrape\").AMPAS_PICTURE()'",
+    "AMPAS_PICTURE_INSERT": "node -e 'require(\"./_Insert\").AMPAS_PICTURE()'",
+    "AMPAS_PICTURE_UPDATE": "node -e 'require(\"./_Update\").AMPAS_PICTURE()'",
+    "AMPAS_PICTURE_DELETE": "node -e 'require(\"./_Delete\").AMPAS_PICTURE()'"
   },
   "author": "",
   "license": "ISC",

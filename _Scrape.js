@@ -1,12 +1,5 @@
-const scripts = {
-  AMPAS_BP: () => require('./scripts/scrape/ampas-bp')(),
-};
+const refs = require('./__refs');
 
-const runAllScripts = () => {
-  Object.values(scripts).forEach(async script => {
-    await script();
-  });
+module.exports = {
+  AMPAS_PICTURE: () => refs.AMPAS_PICTURE.script().then(d=>console.log(d)).catch(e=>console.log(e)),
 };
-
-// runAllScripts();
-scripts.AMPAS_BP();

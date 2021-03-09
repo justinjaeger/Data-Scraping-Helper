@@ -1,35 +1,26 @@
-require('dotenv').config()
-const Airtable = require('airtable');
+const base = require('../base');
+const GetIdsScript = require('./GetIdsScript');
 
 /**
- * Exports a function that takes a massive data object
- * Batches the data and asynchronously inserts batches into Airtable
- * Completely universal
+ * Batches the data (an array of ids) 
+ * and inserts batches into Airtable
+ * @param {String} formula 
+ * @returns {Promise}
  */
 
-// Create base with Airtable credentials
-const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(process.env.TEST_BASE_ID);
-
-/**
- * Exports a promise
- * Takes an array of Ids
- * Deletes in batches
- */
-const deleteRecordBatch = async (batch) => {
+module.exports = async (formula) => {
+  
   return new Promise( async (resolve, reject) => {
-    await base('Nominees')
-      // Inserts "batch" array of records into the database
-      .destroy(batch, function(err, records) {
-        if (err) reject(err)
-        else {
-          resolve(`Removed ${records.length} records.`);
-        };
-      });
-  });
-};
 
-const asyncDeleteRecords = async (data) => {
-  return new Promise( async (resolve) => {
+    // First, get an array of IDs (data)
+    let data;
+    await GetIdsScript(formula)
+      .then(res => { console.log(res), data = res; })
+      .catch(err => console.log('record error:',err))
+
+    console.log('Deleting records...')
+    
+    const arrayOfBatches = [];
     // Initialize indicies for loop range
     let start=0, end=10;
     while (start < data.length) {
@@ -38,15 +29,33 @@ const asyncDeleteRecords = async (data) => {
       for (let i=start; i<end; i++) {
         if (data[i]) batch.push(data[i]);
       };
-      // Insert batch into Airtable
-      await deleteRecordBatch(batch)
-        .then(res => console.log(res))
+      arrayOfBatches.push(batch);
       // Reset for next batch
       batch = [], start+=10, end+=10;
     };
-    resolve('done');
+    // Execute all the batches
+    await Promise.all(arrayOfBatches.map(deleteRecordBatch))
+      .then(res => resolve('Complete! ', res))
+      .catch(err => reject(err))
   });
 };
 
-module.exports = asyncDeleteRecords;
+/**
+ * Deletes every Id in batch
+ * @param {*} batch 
+ * @returns {Promise}
+ */
 
+const deleteRecordBatch = async (batch) => {
+  return new Promise( async (resolve, reject) => {
+    await base('Nominees')
+      // Inserts "batch" array of records into the database
+      .destroy(batch, function(err, records) {
+        if (err) reject(err)
+        else {
+          // console.log(`Removed ${records.length} records.`)
+          resolve(`Removed ${records.length} records.`);
+        };
+      });
+  });
+};

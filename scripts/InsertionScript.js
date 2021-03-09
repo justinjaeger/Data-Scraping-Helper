@@ -1,15 +1,42 @@
-require('dotenv').config()
-const Airtable = require('airtable');
+const base = require('../base');
 
 /**
- * Exports a function that returns a promise
- * Function takes a massive data object
- * Batches the data 10 at a time and asynchronously inserts batches into Airtable
- * Completely universal
+ * Batches the data 10 at a time and 
+ * asynchronously insert batches into Airtable
+ * @param {Array} data 
+ * @returns {Promise}
  */
 
-// Create base with Airtable credentials
-const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(process.env.TEST_BASE_ID);
+module.exports = async (data) => {
+
+  console.log('Inserting records into Airtable...')
+
+  return new Promise( async (resolve, reject) => {
+    const arrayOfBatches = [];
+    // Initialize indicies for loop range
+    let start=0, end=10;
+    while (start < data.length) {
+      // Create batch
+      let batch = [];
+      for (let i=start; i<end; i++) {
+        if (data[i]) batch.push(data[i]);
+      };
+      arrayOfBatches.push(batch);
+      // Reset for next batch
+      batch = [], start+=10, end+=10;
+    };
+    // Execute all the batches
+    await Promise.all(arrayOfBatches.map(insertRecordBatch))
+      .then(res => resolve('Complete! ', res))
+      .catch(err => reject(err))
+  });
+};
+
+/**
+ * Inserts batch of records into Airtable
+ * @param {array} batch 
+ * @returns {Promise}
+ */
 
 const insertRecordBatch = async (batch) => {
   return new Promise( async (resolve, reject) => {
@@ -20,34 +47,9 @@ const insertRecordBatch = async (batch) => {
       .create(batch, (err, records) => {
         if (err) reject(err)
         else {
-          records.forEach(record => {
-            output.push(record.fields.Nominee);
-          });
-          resolve(output);
+          // console.log(`Inserted ${records.length} records.`);
+          resolve(`Inserted ${records.length} records.`);
         };
       });
   });
 };
-
-const asyncInsertRecords = async (data) => {
-  return new Promise( async (resolve) => {
-    // Initialize indicies for loop range
-    let start=0, end=10;
-    while (start < data.length) {
-      // Create batch
-      let batch = [];
-      for (let i=start; i<end; i++) {
-        if (data[i]) batch.push(data[i]);
-      };
-      // Insert batch into Airtable
-      await insertRecordBatch(batch)
-        .then(res => console.log(res))
-      // Reset for next batch
-      batch = [], start+=10, end+=10;
-    };
-    resolve('done');
-  });
-};
-
-module.exports = asyncInsertRecords;
-
