@@ -28,7 +28,7 @@ module.exports = async (obj) => {
     console.log('(3/4)')
 
     // INSERT data into airtable
-    await InsertionScript(data)
+    await InsertionScript(data())
       .then(res => console.log(res))
       .catch(err => console.log('insertion error:', err))
 

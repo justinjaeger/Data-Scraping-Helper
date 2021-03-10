@@ -34,7 +34,7 @@ const scrape = () => {
           // if not, instantiate a record
           const record = {
             'fields': {
-              'AwardsShow': 'AMPAS',
+              'AwardsShow': 'PGA',
               'Year': year,
               'Category': 'Best Picture',
               'Specification': null,
