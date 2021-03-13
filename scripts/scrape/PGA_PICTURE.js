@@ -1,12 +1,5 @@
 const puppeteer = require('puppeteer');
 const fs = require('fs')
-const path = require('path');
-
-/**
- * Functino that returns a promise 
- * Scrapes the AMPAS Best Picture Wiki page
- * Outputs to AMPAS_PICTURE.json
- */
 
 const scrape = () => {
 
@@ -33,15 +26,13 @@ const scrape = () => {
           if (row.querySelector('tr th')) { return; }
           // if not, instantiate a record
           const record = {
-            'fields': {
-              'AwardsShow': 'PGA',
-              'Year': year,
-              'Category': 'Best Picture',
-              'Specification': null,
-              'Film': null,
-              'Nominee': null,
-              'Winner': null
-            }
+            'AwardsShow': 'PGA',
+            'Year': year,
+            'Category': 'Best Picture',
+            'Subcategory': null,
+            'Film': null,
+            'Nominee': null,
+            'Winner': null
           };
           // get all of the columns in the row
           let columns = Array.from(row.querySelectorAll('tr td'));
@@ -50,28 +41,28 @@ const scrape = () => {
             // if column has text-align: center, we know it's a year. Set the year & return
             if (col.matches('td[style*="text-align:center"]')) {
               year = row.querySelector('tr td').innerText.slice(0,4);
-              record.fields['Year'] = year;
+              record['Year'] = year;
               return;
             } 
             // if not a year column...
             else {
               // Fill the Film field if empty, since we come across that first (also do the winner field why not)
-              if (!record.fields['Film']) {
-                record.fields['Film'] = col.innerText;
-                record.fields['Winner'] = col.matches('tr[style*="background:#FAEB86"]') ? 'true' : 'false';
+              if (!record['Film']) {
+                record['Film'] = col.innerText.replace(/'/g, "''");
+                record['Winner'] = col.matches('tr[style*="background:#FAEB86"]') ? 1 : 0;
               // If Film has been filled, take care of the 'producers' / 'Nominee' field
               } else {
                 // Iterate through each producer and push a record for each one
                 let producers = col.innerText;
                 let nominees = producers.split(/, and | and |, /);
                 nominees.forEach(nominee => {
-                  record.fields['Nominee'] = nominee;
+                  record['Nominee'] = nominee.replace(/'/g, "''");
                   // deep clone the object
                   const deepClone = JSON.parse(JSON.stringify(record));
                   rowList.push(deepClone);
                 });
               };
-            }
+            };
           })
         })
       })

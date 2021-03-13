@@ -43,25 +43,23 @@ const scrape = () => {
           } 
           else {
             const record = {
-              'fields': {
-                'AwardsShow': 'AMPAS',
-                'Year': year,
-                'Category': 'Best Picture',
-                'Specification': null,
-                'Film': null,
-                'Nominee': null,
-                'Winner': null
-              }
+              'AwardsShow': 'AMPAS',
+              'Year': year,
+              'Category': 'Best Picture',
+              'Subcategory': null,
+              'Film': null,
+              'Nominee': null,
+              'Winner': null
             };
             let columns = Array.from(row.querySelectorAll('tr td'));
-            record.fields['Film'] = columns[0].innerText;
-            record.fields['Winner'] = row.matches('tr[style*="background:#FAEB86"]') ? 'true' : 'false';
+            record['Film'] = columns[0].innerText.replace(/'/g, "''");
+            record['Winner'] = row.matches('tr[style*="background:#FAEB86"]') ? 1 : 0;
             // Determine how many nominees there are and push a record per nominee
             // separate by ' and ' and ', '
             let producers = columns[1].innerText;
             let nominees = producers.split(/, and | and |, /);
             nominees.forEach(nominee => {
-              record.fields['Nominee'] = nominee;
+              record['Nominee'] = nominee.replace(/'/g, "''");
               // deep clone the object
               const deepClone = JSON.parse(JSON.stringify(record));
               rowList.push(deepClone);

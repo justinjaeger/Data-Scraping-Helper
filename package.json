@@ -4,26 +4,22 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "SCRAPE_ALL": "node -e 'require(\"./_All\").scrape()'",
-    "INSERT_ALL": "node -e 'require(\"./_All\").insert()'",
-    "UPDATE_ALL": "node -e 'require(\"./_All\").update()'",
-    "DELETE_ALL": "node -e 'require(\"./_All\").delete()'",
-    "AMPAS_PICTURE_SCRAPE": "node -e 'require(\"./_Scrape\").AMPAS_PICTURE()'",
-    "AMPAS_PICTURE_INSERT": "node -e 'require(\"./_Insert\").AMPAS_PICTURE()'",
-    "AMPAS_PICTURE_UPDATE": "node -e 'require(\"./_Update\").AMPAS_PICTURE()'",
-    "AMPAS_PICTURE_DELETE": "node -e 'require(\"./_Delete\").AMPAS_PICTURE()'",
-    "PGA_PICTURE_SCRAPE": "node -e 'require(\"./_Scrape\").PGA_PICTURE()'",
-    "PGA_PICTURE_INSERT": "node -e 'require(\"./_Insert\").PGA_PICTURE()'",
-    "PGA_PICTURE_UPDATE": "node -e 'require(\"./_Update\").PGA_PICTURE()'",
-    "PGA_PICTURE_DELETE": "node -e 'require(\"./_Delete\").PGA_PICTURE()'"
+    "UPDATE_ALL":             "node -e 'require(\"./_All\")()'",
+    "AMPAS_PICTURE_SCRAPE":   "node -e 'require(\"./_Scripts\").AMPAS_PICTURE.scrape()'",
+    "AMPAS_PICTURE_INSERT":   "node -e 'require(\"./_Scripts\").AMPAS_PICTURE.insert()'",
+    "AMPAS_PICTURE_DELETE":   "node -e 'require(\"./_Scripts\").AMPAS_PICTURE.delete()'",
+    "AMPAS_PICTURE_UPDATE":   "node -e 'require(\"./_Scripts\").AMPAS_PICTURE.update()'",
+    "PGA_PICTURE_SCRAPE":     "node -e 'require(\"./_Scripts\").PGA_PICTURE.scrape()'",
+    "PGA_PICTURE_INSERT":     "node -e 'require(\"./_Scripts\").PGA_PICTURE.insert()'",
+    "PGA_PICTURE_DELETE":     "node -e 'require(\"./_Scripts\").PGA_PICTURE.delete()'",
+    "PGA_PICTURE_UPDATE":     "node -e 'require(\"./_Scripts\").PGA_PICTURE.update()'"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "airtable": "^0.10.1",
     "dotenv": "^8.2.0",
     "fs": "0.0.1-security",
-    "path": "^0.12.7",
+    "mysql": "^2.18.1",
     "puppeteer": "^8.0.0"
   }
 }
