@@ -1,39 +1,26 @@
-// CATEGORIES
-const c = {
-  picture:              "Best Picture",
-  director:             "Best Director",
-  actor:                "Best Actor",
-  actress:              "Best Actress",
-  supp_actor:           "Best Supporting Actor",
-  supp_actress:         "Best Supporting Actress",
-  animated:             "Best Animated Feature",
-  animated_short:       "Best Animated Short",
-  cinematography:       "Best Cinematography",
-  costume:              "Best Costume Design",
-  documentary:          "Best Documentary Feature",
-  documentary_short:    "Best Documentary Short",
-  editing:              "Best Editing",
-  international:        "Best International Feature",
-  live_action_short:    "Best Live Action Short",
-  makeup:               "Best Makeup and Hairstyling",
-  score:                "Best Original Score",
-  song:                 "Best Original Song",
-  production_design:    "Best Production Design",
-  sound:                "Best Sound",
-  visual_effects:       "Best Visual Effects",
-  adapted_screenplay:   "Best Adapted Screenplay",
-  original_screenplay:  "Best Original Screenplay",
-  // Other
-  ensemble:             "Best Ensemble",
-  stunt_ensemble:       "Best Stunt Ensemble",
-  young_actor:          "Best Young Actor",
-};
+const InsertScript = require('./scripts/InsertScript');
+const DeleteScript = require('./scripts/DeleteScript');
+const UpdateScript = require('./scripts/UpdateScript');
+
+/**
+ * scrape: opens up browser, scrapes data into 
+ *         .json file /outputs folder
+ * insert: converts .json file to sql query and 
+ *         writes to the database
+ * delete: deletes that show/category from database
+ * update: does all of the above in sequence
+ */
 
 module.exports = {
   AMPAS_PICTURE: {
-    data:     () => require('./outputs/AMPAS_PICTURE.json'),
-    script:   require('./scripts/scrape/AMPAS_PICTURE.js'),
-    formula:  `AND(AwardsShow="AMPAS", Category="${c.picture}")`,
+    scrape: () => require('./scripts/scrape/AMPAS_PICTURE.js')(),
+    insert: () => InsertScript(require('./outputs/AMPAS_PICTURE.json')),
+    delete: () => DeleteScript('AMPAS', 'Best Picture'),
+    update: () => UpdateScript(
+      require('./scripts/scrape/AMPAS_PICTURE.js'),
+      'AMPAS', 'Best Picture', 
+      require('./outputs/AMPAS_PICTURE.json')
+    )
   },
   // AMPAS_DIRECTOR: {
   //   data:     () => require('./outputs/AMPAS_DIRECTOR.json'),
@@ -146,9 +133,14 @@ module.exports = {
   //   formula:  `AND(AwardsShow="AMPAS", Category="${c.original_screenplay}")`,
   // },
   PGA_PICTURE: {
-    data:     () => require('./outputs/PGA_PICTURE.json'),
-    script:   require('./scripts/scrape/PGA_PICTURE.js'),
-    formula:  `AND(AwardsShow="PGA", Category="${c.picture}")`,
+    scrape: () => require('./scripts/scrape/PGA_PICTURE.js')(),
+    insert: () => InsertScript(require('./outputs/PGA_PICTURE.json')),
+    delete: () => DeleteScript('PGA', 'Best Picture'),
+    update: () => UpdateScript(
+      require('./scripts/scrape/PGA_PICTURE.js'),
+      'PGA', 'Best Picture', 
+      require('./outputs/PGA_PICTURE.json')
+    )
   },
   // PGA_ANIMATED: {
   //   data:     () => require('./outputs/PGA_ANIMATED.json'),

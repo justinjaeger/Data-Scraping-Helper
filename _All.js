@@ -1,21 +1,15 @@
-const Scrape = require('./_Scrape');
-const Insert = require('./_Insert');
-const Update = require('./_Update');
-const Delete = require('./_Delete');
+const Scripts = require('./_Scripts');
 
 const runScripts = (obj) => {
-  Promise.all(Object.values(obj).map((fn, i) => { 
-    let l = Object.keys(obj).length;
+  let l = Object.keys(obj).length;
+
+  // run the update scripts for each award/category
+  Promise.all(Object.values(obj).map((scripts, i) => { 
     console.log(`Executing script (${i+1}/${l})`);
-    return fn();
+    return scripts.update();
   }))
   .then(() => console.log('Finished!'))
   .catch(err => console.log('Error running all insertion scripts:',err))
 };
 
-module.exports = {
-  scrape: () => runScripts(Scrape),
-  insert: () => runScripts(Insert),
-  update: () => runScripts(Update),
-  delete: () => runScripts(Delete),
-};
+module.exports = () => runScripts(Scripts);
