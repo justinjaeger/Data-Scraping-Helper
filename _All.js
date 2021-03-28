@@ -8,7 +8,6 @@ const runScripts = (obj) => {
     console.log(`Executing script (${i+1}/${l})`);
     return scripts.update();
   }))
-  .then(() => console.log('Finished!'))
   .catch(err => console.log('Error running all insertion scripts:',err))
 };
 
