@@ -6,7 +6,7 @@ module.exports = async function writeDataToSQL(DATA) {
 
   const arrayOfBatches = [];
 
-  let start=0, end=40;
+  let start=0, end=20;
   // run this batching until you iterate through AMPAS_PICTURE
   while (start < DATA.length) {
     // make sure that you don't run an operation where i > AMPAS_PICTURE.length
@@ -30,7 +30,7 @@ module.exports = async function writeDataToSQL(DATA) {
       batch.push(sql);
     };
     // push batch to arrayOfBatches and increase batch index limits
-    start+=40, end+=40;
+    start+=20, end+=20;
     arrayOfBatches.push(batch);
   };
 
