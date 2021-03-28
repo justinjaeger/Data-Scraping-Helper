@@ -22,11 +22,12 @@ module.exports = {
       require('./outputs/AMPAS_PICTURE.json')
     )
   },
-  // AMPAS_DIRECTOR: {
-  //   data:     () => require('./outputs/AMPAS_DIRECTOR.json'),
-  //   script:   require('./scripts/scrape/AMPAS_DIRECTOR.js'),
-  //   formula:  `AND(AwardsShow="AMPAS", Category="${c.director}")`,
-  // },
+  AMPAS_DIRECTOR: {
+    data:     () => require('./outputs/AMPAS_DIRECTOR.json'),
+    script:   require('./scripts/scrape/AMPAS_DIRECTOR.js'),
+    scrape: () => require('./scripts/scrape/AMPAS_DIRECTOR.js')(),
+    // formula:  `AND(AwardsShow="AMPAS", Category="${c.director}")`,
+  },
   // AMPAS_ACTOR: {
   //   data:     () => require('./outputs/AMPAS_ACTOR.json'),
   //   script:   require('./scripts/scrape/AMPAS_ACTOR.js'),
