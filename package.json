@@ -9,6 +9,7 @@
     "AMPAS_PICTURE_INSERT":   "node -e 'require(\"./_Scripts\").AMPAS_PICTURE.insert()'",
     "AMPAS_PICTURE_DELETE":   "node -e 'require(\"./_Scripts\").AMPAS_PICTURE.delete()'",
     "AMPAS_PICTURE_UPDATE":   "node -e 'require(\"./_Scripts\").AMPAS_PICTURE.update()'",
+    "AMPAS_DIRECTOR_SCRAPE":  "node -e 'require(\"./_Scripts\").AMPAS_DIRECTOR.scrape()'",
     "PGA_PICTURE_SCRAPE":     "node -e 'require(\"./_Scripts\").PGA_PICTURE.scrape()'",
     "PGA_PICTURE_INSERT":     "node -e 'require(\"./_Scripts\").PGA_PICTURE.insert()'",
     "PGA_PICTURE_DELETE":     "node -e 'require(\"./_Scripts\").PGA_PICTURE.delete()'",

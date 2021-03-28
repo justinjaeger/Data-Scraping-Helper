@@ -11,8 +11,9 @@ const scrape = () => {
     /*******/
     const url = 'https://en.wikipedia.org/wiki/Producers_Guild_of_America_Award_for_Best_Theatrical_Motion_Picture';
     await page.goto(url, { waitUntil : 'domcontentloaded' });
+
     // select all the decade tables
-    let decadeTableSelector = 'table.wikitable[width="80%"]';
+    let decadeTableSelector = 'table.wikitable[width="80%"]'; // GENERALIZE
     const recordList = await page.$$eval(decadeTableSelector, (decades) => {
       const rowList = [];
       // loop through all the decade tables

@@ -1,49 +1,43 @@
 const puppeteer = require('puppeteer');
 const fs = require('fs')
 
-const scrape = () => {
+const scrape = (awardsShow, category, url, subcategory) => {
 
-  console.log('Scraping fresh data for AMPAS DIRECTOR...');
+  if (!subcategory) subcategory = null;
+
+  console.log(`Scraping fresh data for ${awardsShow} ${category}...`);
   
   return new Promise( async (resolve, reject) => {
+    // Launch headless browser and await page/DOM load
     const browser = await puppeteer.launch({headless : false});
     const page = await browser.newPage();
-    /*******/
-    const url = 'https://en.wikipedia.org/wiki/Academy_Award_for_Best_Director';
     await page.goto(url, { waitUntil : 'domcontentloaded' });
 
-    // select all the decade tables
-    let decadeTableSelector = 'table.wikitable';
-    const recordList = await page.$$eval(decadeTableSelector, (decades) => {
+    // select all tables
+    const recordList = await page.$$eval('table.wikitable', (decades) => {
       const rowList = [];
-      // loop through all the decade tables
+      // loop through all tables
       decades.forEach(decade => {
+        // filter out the non-decade tables
+        let firstHeader = decade.querySelectorAll('th')[0];
+        if (!firstHeader || firstHeader.innerText !== 'Year') return;
+
         let year = '';
-        // if the given table is the page's legend, skip it
-        if(decade.querySelector('div.legend')) return;
-        // console.log('wikitable.tbody?: ', decade.querySelector('tbody'));
-        let era = 0;
-        if(decade.querySelector('tbody tr td[data-sort-value*="ω"]')){
-          era = decade.querySelector('tbody tr td[data-sort-value*="ω"]').innerText.slice(0,4);
-          // console.log(era);
-        }
         // select all of the rows in decade table
         const rows = Array.from(decade.querySelectorAll('tbody tr'))
         // loop through each row
         rows.forEach(row => {
-          // console.log(row.querySelector('td') ? 'This is indeed a row' : 'Nah, bud');
-          let subcategory = null;
-          let film = null;
-          let nominee = null;
-          let winner = 0;
+          // if row is header, skip it
+          if (row.querySelector('tr th')) { return; }
+          
           const record = {
-            'AwardsShow': 'AMPAS',
+            'AwardsShow': awardsShow,
             'Year': year,
-            'Category': 'Best Director',
+            'Category': category,
             'Subcategory': subcategory,
-            'Film': film,
-            'Nominee': nominee,
-            'Winner': winner
+            'Film': null,
+            'Nominee': null,
+            'Winner': 0,
           };
           // get all of the columns in the row
           let columns = Array.from(row.querySelectorAll('tr td'));
@@ -88,14 +82,15 @@ const scrape = () => {
       return rowList;
     });
 
-    browser.close();
+    // browser.close();
 
     // Store output ((null, 2) argument is for readability purposes)
-    fs.writeFile('outputs/AMPAS_DIRECTOR.json', JSON.stringify(recordList, null, 2), err => {
+    fs.writeFile(`outputs/${awardsShow}_${category}.json`, JSON.stringify(recordList, null, 2), err => {
       if(err) reject(err);
       else resolve('Saved Successfully!')
     });
   });  
 };
 
-module.exports = scrape;
+// module.exports = scrape;
+scrape('AMPAS', 'director', 'https://en.wikipedia.org/wiki/Academy_Award_for_Best_Director')

@@ -5,7 +5,7 @@ const fs = require('fs')
  * Functino that returns a promise 
  * Scrapes the AMPAS Best Picture Wiki page
  * Outputs to AMPAS_PICTURE.json
- */
+ */ 
 
 const scrape = () => {
 
