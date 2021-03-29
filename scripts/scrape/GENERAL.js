@@ -49,7 +49,6 @@ const scrape = (awardsShow, category, url, subcategory = null) => {
           //if the first two digits of the rowtext are '19' or '20' and the rowtext doesn't include 's' that's the year
           if (((`${rowText[0]}${rowText[1]}` == '19' || `${rowText[0]}${rowText[1]}` == '20') && !(rowText[4] && rowText[4] === 's'))) { 
             year = rowText.slice(0, 4);
-            console.log(year);
             record['Year'] = year;
           }
           // if the row says 'Year', it's the key
@@ -81,8 +80,13 @@ const scrape = (awardsShow, category, url, subcategory = null) => {
               winner = 1;
               record['Winner'] = winner;
             } 
-            // if we're in the column with nominees, add a nominee
-            if (!nominee && i === nomCol) {
+            // if we're in the column with films, add a film
+            if (!film && i === filmCol) {
+              // Add the film category
+              let currFilm = colText;
+              film = currFilm;
+              record['Film'] = film;
+            } else if (!nominee && i === nomCol) {
               nominee = colText.replace(/'/g, "''");
               // remove parenthetical, if it's there, and add it as a subcategory;
               if (nominee.includes('(')) {
@@ -92,18 +96,22 @@ const scrape = (awardsShow, category, url, subcategory = null) => {
                 record['Subcategory'] = subcategory;
                 nominee = nominee.slice(0, end - 2);
               // if there are multiple nominees, seperate them with spaces and a comma
-              } else if (nominee.includes(',')) {
-                const noms = nominee.split(', ').join();
-                nominee = noms;
+              } else if (nominee.includes(',') || nominee.includes('and')) {
+                // if there are more than two nominees, split them by the comma
+                let noms = [];
+                if (nominee.includes(',')) {
+                  noms = nominee.split(', ');
+                  noms[noms.length - 1] = noms[noms.length - 1].slice(4,);
+                } else noms = nominee.split(' and ');
+                // add each nominee as an entry to the record
+                for (let i = 0; i < noms.length; i+= 1) {
+                  record['Nominee'] = noms[i];
+                  const deepClone = JSON.parse(JSON.stringify(record));
+                  rowList.push(deepClone);
+                }
+                return;
               }
               record['Nominee'] = nominee;
-            // If this is the column with films, add a film
-            } else if (!film && i === filmCol) {
-              // Add the film category
-              let currFilm = colText;
-              film = currFilm;
-              record['Film'] = film;
-              // deep clone the object
               const deepClone = JSON.parse(JSON.stringify(record));
               rowList.push(deepClone);
             };
