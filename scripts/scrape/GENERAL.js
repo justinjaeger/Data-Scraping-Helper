@@ -26,19 +26,16 @@ const scrape = (awardsShow, category, url, subcategory = null) => {
         r+=1;
       };
       let firstDecade = decades[r];
-      console.log('firstDecade',firstDecade)
 
       // 2. Find out which tr the legend is in and get it
       let legendRow;
       if (firstDecade.querySelector('thead tr th') && firstDecade.querySelector('thead tr th').innerText === 'Year') {
         legendRow = firstDecade.querySelector('thead tr');
-        console.log('head')
+        console.log('legend located in head')
       } else {
         legendRow = firstDecade.querySelector('tbody tr');
-        console.log('body')
+        console.log('legend located in body')
       };
-
-      console.log('legendRow', legendRow);
 
       // 3. Assign nomCol and filmCol accordingly
       const headerArr = Array.from(legendRow.querySelectorAll('th'));
@@ -58,8 +55,6 @@ const scrape = (awardsShow, category, url, subcategory = null) => {
         if (!firstHeader) return;
         if (firstHeader.innerText !== 'Year') return;
 
-        console.log('firstHeader',firstHeader)
-
         let year = null;
 
         // select all of the rows in decade table
@@ -70,8 +65,6 @@ const scrape = (awardsShow, category, url, subcategory = null) => {
 
           // select ALL inner text from the row. 
           const rowText = row.innerText;
-
-          console.log('rowtext', rowText)
 
           // instantiate record
           const record = {
@@ -93,7 +86,6 @@ const scrape = (awardsShow, category, url, subcategory = null) => {
           // Get array of all (non-year) columns in the row
           // NOTE: I have to make this more specific, not all years are th so this will not filter them
           let columns = Array.from(row.querySelectorAll('tr td'));
-          console.log('columns', columns)
 
           // Check if valid row
           if (columns.length < 2) return;
@@ -106,7 +98,6 @@ const scrape = (awardsShow, category, url, subcategory = null) => {
           // If it is a year, the filmCol and nomCol will actually be one index up, 
           // so we account for that by assigning them
           let first2chars = columns[0].innerText.slice(0,2);
-          console.log('first2chars', first2chars)
           // If the film TITLE is a year, the last cnditional will fix that cause titles are in italics
           if ((first2chars === '19' || first2chars === '20') && !columns[0].querySelector('td > i')) {
               filmColText = columns[filmCol+1].innerText;
@@ -119,15 +110,9 @@ const scrape = (awardsShow, category, url, subcategory = null) => {
             record['Winner'] = 1;
           };
 
-          console.log('film col', columns[filmCol])
-          console.log('nom col', columns[nomCol])
-
           // Get text for film and noms columns (if still null)
           if (!filmColText) filmColText = columns[filmCol].innerText;
           if (!nomColText) nomColText = columns[nomCol].innerText;
-
-          console.log('filmColText', filmColText)
-          console.log('nomColText', nomColText)
 
           // Assign film field
           record['Film'] = filmColText.replace(/'/g, "''");;
