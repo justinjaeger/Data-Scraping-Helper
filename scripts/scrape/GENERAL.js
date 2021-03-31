@@ -84,7 +84,6 @@ const scrape = (awardsShow, category, url, subcategory = null) => {
           };
 
           // Get array of all (non-year) columns in the row
-          // NOTE: I have to make this more specific, not all years are th so this will not filter them
           let columns = Array.from(row.querySelectorAll('tr td'));
 
           // Check if valid row
@@ -105,14 +104,14 @@ const scrape = (awardsShow, category, url, subcategory = null) => {
               console.log('YEAR IS A TD');
           };
 
+          // Get text for film and noms columns (if still null / unassigned)
+          if (!filmColText) filmColText = columns[filmCol].innerText;
+          if (!nomColText) nomColText = columns[nomCol].innerText;
+
           // Check if winner (aka text is bold)
           if (columns[0].querySelector('td > b') || columns[0].querySelector('td > i > b')) {
             record['Winner'] = 1;
           };
-
-          // Get text for film and noms columns (if still null)
-          if (!filmColText) filmColText = columns[filmCol].innerText;
-          if (!nomColText) nomColText = columns[nomCol].innerText;
 
           // Assign film field
           record['Film'] = filmColText.replace(/'/g, "''");;
