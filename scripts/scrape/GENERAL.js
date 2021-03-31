@@ -12,104 +12,121 @@ const scrape = (awardsShow, category, url, subcategory = null) => {
     const page = await browser.newPage();
     await page.goto(url, { waitUntil : 'domcontentloaded' });
     
-    // select all tables
-    // How do we access variables declared outside inside this func? 
-    const recordList = await page.$$eval('table.wikitable', (decades, awardsShow, category, subcategory = null) => {
+    // Select all tables
+    const recordList = await page.$$eval('table.wikitable', (decades, awardsShow, category, subcategory) => {
       const rowList = [];
+
+      // ASSIGN LEGEND (1, 2, 3)
       let nomCol = null; 
       let filmCol = null;
+
+      // 1. Get the first valid decade table
+      let r = 0;
+      while (!decades[r].querySelector('th') || decades[r].querySelector('th').innerText !== 'Year') {
+        r+=1;
+      };
+      let firstDecade = decades[r];
+
+      // 2. Find out which tr the legend is in and get it
+      let legendRow;
+      if (firstDecade.querySelector('thead tr th') && firstDecade.querySelector('thead tr th').innerText === 'Year') {
+        legendRow = firstDecade.querySelector('thead tr');
+        console.log('legend located in head')
+      } else {
+        legendRow = firstDecade.querySelector('tbody tr');
+        console.log('legend located in body')
+      };
+
+      // 3. Assign nomCol and filmCol accordingly
+      const headerArr = Array.from(legendRow.querySelectorAll('th'));
+      if (headerArr[1].innerText === 'Film' || headerArr[1].innerText === 'Winner') {
+        filmCol = 0; // If here, headerArr[1] is the film column
+      };
+      nomCol = (filmCol === 0) ? 1 : 0;
+      filmCol = (nomCol === 1) ? 0 : 1;
+
+      console.log('nom, film', nomCol, filmCol)
+
       // loop through all tables
       decades.forEach(decade => {
+        
         // filter out the non-decade tables
         let firstHeader = decade.querySelector('th');
         if (!firstHeader) return;
         if (firstHeader.innerText !== 'Year') return;
 
         let year = null;
+
         // select all of the rows in decade table
         const rows = Array.from(decade.querySelectorAll('tbody tr'))
+
         // loop through each row
         rows.forEach(row => {
-          let film = null;
-          let nominee = null;
-          subcategory = null;
-          let winner = 0;
-    
-          // select all the inner text from the row. 
+
+          // select ALL inner text from the row. 
           const rowText = row.innerText;
+
+          // instantiate record
           const record = {
             'AwardsShow': awardsShow,
             'Year': year,
             'Category': category,
             'Subcategory': subcategory,
-            'Film': film,
-            'Nominee': nominee,
-            'Winner': winner,
+            'Film': null,
+            'Nominee': null,
+            'Winner': 0,
           };
-          //if the first two digits of the rowtext are '19' or '20' and the rowtext doesn't include 's' that's the year
-          if (((`${rowText[0]}${rowText[1]}` == '19' || `${rowText[0]}${rowText[1]}` == '20') && !(rowText[4] && rowText[4] === 's'))) { 
+
+          // If row contains the year, update year field
+          if ((`${rowText[0]}${rowText[1]}` == '19' || `${rowText[0]}${rowText[1]}` == '20') && !(rowText[4] && rowText[4] === 's')) { 
             year = rowText.slice(0, 4);
-            console.log(year);
             record['Year'] = year;
-          }
-          // if the row says 'Year', it's the key
-          else if ((!filmCol || !nomCol) && rowText.includes('Year')){
-            // make an array;
-            const headerArr = Array.from(row.querySelectorAll('th'))
-            for (let i = 0; i < headerArr.length; i += 1) {
-              const cell = headerArr[i];
-              // columns are stored as i - 1 because the rows with the actual names won't include the year;
-              if(cell.innerText == 'Film'){
-                filmCol = i - 1;
-              } else if (cell.innerText.includes('(s)')) {
-                nomCol = i - 1;
-              }
-            }
-          }
-          // otherwise skip the header rows
-          else if (row.querySelector('tr th')) { 
-            return; 
-          }
-          // get all of the columns in the row
-          let columns = Array.from(row.querySelectorAll('tr td'));
-          // loop through the columns
-          for(let i = 0; i < columns.length; i++){
-            col = columns[i];
-            let colText = col.innerText;
-            // If the text is bolded, the nominee in this row won;
-            if(winner === 0 && col.querySelector('td > b')){
-              winner = 1;
-              record['Winner'] = winner;
-            } 
-            // if we're in the column with nominees, add a nominee
-            if (!nominee && i === nomCol) {
-              nominee = colText.replace(/'/g, "''");
-              // remove parenthetical, if it's there, and add it as a subcategory;
-              if (nominee.includes('(')) {
-                let end = nominee.indexOf('(')
-                let parenthetical = nominee.slice(end + 1, -1);
-                subcategory = parenthetical;
-                record['Subcategory'] = subcategory;
-                nominee = nominee.slice(0, end - 2);
-              // if there are multiple nominees, seperate them with spaces and a comma
-              } else if (nominee.includes(',')) {
-                const noms = nominee.split(', ').join();
-                nominee = noms;
-              }
-              record['Nominee'] = nominee;
-            // If this is the column with films, add a film
-            } else if (!film && i === filmCol) {
-              // Add the film category
-              let currFilm = colText;
-              film = currFilm;
-              record['Film'] = film;
-              // deep clone the object
-              const deepClone = JSON.parse(JSON.stringify(record));
-              rowList.push(deepClone);
-            };
           };
+
+          // Get array of all (non-year) columns in the row
+          // NOTE: I have to make this more specific, not all years are th so this will not filter them
+          let columns = Array.from(row.querySelectorAll('tr td'));
+
+          // Check if valid row
+          if (columns.length < 2) return;
+
+          // Initialize these variables. This will make sense below
+          let filmColText = null;
+          let nomColText = null;
+
+          // We need to do a check that this td is not a year
+          // If it is a year, the filmCol and nomCol will actually be one index up, 
+          // so we account for that by assigning them
+          let first2chars = columns[0].innerText.slice(0,2);
+          // If the film TITLE is a year, the last cnditional will fix that cause titles are in italics
+          if ((first2chars === '19' || first2chars === '20') && !columns[0].querySelector('td > i')) {
+              filmColText = columns[filmCol+1].innerText;
+              nomColText = columns[nomCol+1].innerText;
+              console.log('YEAR IS A TD');
+          };
+
+          // Check if winner (aka text is bold)
+          if (columns[0].querySelector('td > b') || columns[0].querySelector('td > i > b')) {
+            record['Winner'] = 1;
+          };
+
+          // Get text for film and noms columns (if still null)
+          if (!filmColText) filmColText = columns[filmCol].innerText;
+          if (!nomColText) nomColText = columns[nomCol].innerText;
+
+          // Assign film field
+          record['Film'] = filmColText.replace(/'/g, "''");;
+
+          // Assign nominee field
+          let nominees = nomColText.split(/, and | and |, /);
+          nominees.forEach(nominee => {
+            record['Nominee'] = nominee.replace(/'/g, "''");
+            // shallow copy the object and push to array of records
+            const shallowCopy = JSON.parse(JSON.stringify(record));
+            rowList.push(shallowCopy);
+          });
         });
-      })
+      });
       return rowList;
     }, awardsShow, category, subcategory);
 
@@ -120,8 +137,10 @@ const scrape = (awardsShow, category, url, subcategory = null) => {
       if(err) reject(err);
       else resolve('Saved Successfully!')
     });
-  });  
+  });
 };
 
 // module.exports = scrape;
-scrape('AMPAS', 'director', 'https://en.wikipedia.org/wiki/Academy_Award_for_Best_Director')
+// scrape('AMPAS', 'Director', 'https://en.wikipedia.org/wiki/Academy_Award_for_Best_Director')
+// scrape('AMPAS', 'Picture', 'https://en.wikipedia.org/wiki/Academy_Award_for_Best_Picture')
+scrape('PGA', 'Picture', 'https://en.wikipedia.org/wiki/Producers_Guild_of_America_Award_for_Best_Theatrical_Motion_Picture')
