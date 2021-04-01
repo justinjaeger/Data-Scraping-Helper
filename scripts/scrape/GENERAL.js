@@ -16,6 +16,13 @@ const scrape = (awardsShow, category, url, subcategory = null) => {
     const recordList = await page.$$eval('table.wikitable', (decades, awardsShow, category, subcategory) => {
       const rowList = [];
 
+      // header / subcategory cache
+      const nomineesByCategory = {
+        'Picture' : ['Film Studio', 'Producer(s)'],
+        'Director' : ['Director(s)'],
+        'Supporting Actress' : ['Actress'],
+        'Supporting Actor' : ['Actor'],        
+      }
       // ASSIGN LEGEND (1, 2, 3)
       let nomCol = null; 
       let filmCol = null;
@@ -37,13 +44,18 @@ const scrape = (awardsShow, category, url, subcategory = null) => {
         console.log('legend located in body')
       };
 
-      // 3. Assign nomCol and filmCol accordingly
+      // 3. make an array of the headers and iterate through it
       const headerArr = Array.from(legendRow.querySelectorAll('th'));
-      if (headerArr[1].innerText === 'Film' || headerArr[1].innerText === 'Winner') {
-        filmCol = 0; // If here, headerArr[1] is the film column
-      };
-      nomCol = (filmCol === 0) ? 1 : 0;
-      filmCol = (nomCol === 1) ? 0 : 1;
+      // select the array of headers that the current category could be under
+      let catArr = nomineesByCategory[category];
+
+      for(let i = 0; i < headerArr.length; i += 1) {
+        if (headerArr[i].innerText === 'Film' || headerArr[i].innerText === 'Winner') {
+          filmCol = i - 1;
+        } else if (catArr.includes(headerArr[i].innerText)) {
+          nomCol = i - 1;
+        }
+      }
 
       console.log('nom, film', nomCol, filmCol)
 
@@ -141,5 +153,6 @@ const scrape = (awardsShow, category, url, subcategory = null) => {
 
 // module.exports = scrape;
 // scrape('AMPAS', 'Director', 'https://en.wikipedia.org/wiki/Academy_Award_for_Best_Director')
-// scrape('AMPAS', 'Picture', 'https://en.wikipedia.org/wiki/Academy_Award_for_Best_Picture')
-scrape('PGA', 'Picture', 'https://en.wikipedia.org/wiki/Producers_Guild_of_America_Award_for_Best_Theatrical_Motion_Picture')
+scrape('AMPAS', 'Picture', 'https://en.wikipedia.org/wiki/Academy_Award_for_Best_Picture')
+// scrape('AMPAS', 'Supporting Actress', 'https://en.wikipedia.org/wiki/Academy_Award_for_Best_Supporting_Actress');
+// scrape('PGA', 'Picture', 'https://en.wikipedia.org/wiki/Producers_Guild_of_America_Award_for_Best_Theatrical_Motion_Picture')
