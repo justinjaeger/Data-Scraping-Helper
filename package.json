@@ -4,19 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "UPDATE_ALL":             "node -e 'require(\"./_All\")()'",
-    "AMPAS_PICTURE_SCRAPE":   "node -e 'require(\"./_Scripts\").AMPAS_PICTURE.scrape()'",
-    "AMPAS_PICTURE_INSERT":   "node -e 'require(\"./_Scripts\").AMPAS_PICTURE.insert()'",
-    "AMPAS_PICTURE_DELETE":   "node -e 'require(\"./_Scripts\").AMPAS_PICTURE.delete()'",
-    "AMPAS_PICTURE_UPDATE":   "node -e 'require(\"./_Scripts\").AMPAS_PICTURE.update()'",
-    "AMPAS_DIRECTOR_SCRAPE":  "node -e 'require(\"./_Scripts\").AMPAS_DIRECTOR.scrape()'",
-    "PGA_PICTURE_SCRAPE":     "node -e 'require(\"./_Scripts\").PGA_PICTURE.scrape()'",
-    "PGA_PICTURE_INSERT":     "node -e 'require(\"./_Scripts\").PGA_PICTURE.insert()'",
-    "PGA_PICTURE_DELETE":     "node -e 'require(\"./_Scripts\").PGA_PICTURE.delete()'",
-    "PGA_PICTURE_UPDATE":     "node -e 'require(\"./_Scripts\").PGA_PICTURE.update()'"
+    "UPDATE_ALL": "node -e 'require(\"./_All\")()'",
+    "YAHOO_SCRAPE": "node -e 'require(\"./_Scripts\").AMPAS_PICTURE.scrape()'",
+    "YAHOO_INSERT": "node -e 'require(\"./_Scripts\").AMPAS_PICTURE.insert()'",
+    "YAHOO_DELETE": "node -e 'require(\"./_Scripts\").AMPAS_PICTURE.delete()'",
+    "YAHOO_UPDATE": "node -e 'require(\"./_Scripts\").AMPAS_PICTURE.update()'"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Justin Jaeger, Sam Portelance",
+  "license": "MIT",
   "dependencies": {
     "dotenv": "^8.2.0",
     "fs": "0.0.1-security",

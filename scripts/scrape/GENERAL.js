@@ -1,150 +1,118 @@
 const puppeteer = require('puppeteer');
-const fs = require('fs')
+const fs = require('fs');
+const { hasUncaughtExceptionCaptureCallback } = require('process');
 
 // Change: made subcategory a default param since you were effectively doing that already
-const scrape = (awardsShow, category, url, subcategory = null) => {
+const scrape = (url) => {
 
-  console.log(`Scraping fresh data for ${awardsShow} ${category}...`);
+  console.log(`Scraping fresh data for ${url}...`);
   
   return new Promise( async (resolve, reject) => {
     // Launch headless browser and await page/DOM load
     const browser = await puppeteer.launch({headless : false});
     const page = await browser.newPage();
-    await page.goto(url, { waitUntil : 'domcontentloaded' });
+    await page.goto(url);
     
-    // Select all tables
-    const recordList = await page.$$eval('table.wikitable', (decades, awardsShow, category, subcategory) => {
-      const rowList = [];
+    const output = {
+      question : {
+        qTitle: null, 
+        category: null,
+        subCategory: null,
+        qText: null,
+        // unique eight-digit identifier for the question
+        qId: null,
+        // unique six-digit identifier for the user who asked it
+        uId: null,
+        // motherfuckers call their dates weird shit but I want this program to be fast so idk how heavily I want to be manipulating date objects each time I collect them 
+        dateText: null,
+        // change to todays date (format: mmddyy)
+        dateCollected: 041421,
+      }, 
+      answers: [{
+        aText: null,
+        qId: null,
+        uId: null,
+        // T/F for whether this answer was the "best" stored as a binary (0 for F 1 for T)
+        isBest: 0,
+        dateText: null,
+      }],
+      users: [{
+        uId: null,
+        uName: null,
+        numAns: null,
+        percentBest: null,
+        level: 0,
+        points: null,
+      }],
+    };
 
-      // header / subcategory cache
-      const nomineesByCategory = {
-        'Picture' : ['Film Studio', 'Producer(s)'],
-        'Director' : ['Director(s)'],
-        'Supporting Actress' : ['Actress'],
-        'Supporting Actor' : ['Actor'],        
+    // Select the question and answer container
+    output = await page.$eval('div[id^="qnaContainer"]', (qna, url, output) => {
+      // select the array of answers '[class^="AnswersList__container"]'
+      const answers = qna.querySelectorAll('[class^="Answer__answer__"]');
+      // change the single objects in answers and users to an array of the same size as the array of answers
+      output.answers = Array(answers.length).fill(output.answers[0]);
+      output.users = Array(answers.length + 1).fill(output.users[0]);
+      // select the question 
+      console.log('qna: ', qna);
+      // select&add the title
+      output.question.qTitle = qna.querySelector('[class^="Question__title"]').innerText;
+      // select the category and subcategory
+      const subtitle = qna.querySelectorAll('[class^="Question__subtitle"] > a');
+      // add the category
+      output.question.category = subtitle[0].innerText;
+      // add the subcategory
+      if(subtitle[1]) output.question.subCategory = subtitle[1].innerText;
+      // select&add the text
+      output.question.qText = qna.querySelector('[class^="Question__contentWrapper"] > div > p').innerText;
+      // select & add what it says the date is
+      // select & add the user's name to both question & users[currUser]
+      const user = qna.querySelector('[class^="UserProfile__userName"]').innerText;
+      // if the user's name is '?', leave it null
+      if (user !== '?' && user !== "Anonymous") {
+        output.users[0].uName = user;
       }
-      // ASSIGN LEGEND (1, 2, 3)
-      let nomCol = null; 
-      let filmCol = null;
-
-      // 1. Get the first valid decade table
-      let r = 0;
-      while (!decades[r].querySelector('th') || decades[r].querySelector('th').innerText !== 'Year') {
-        r+=1;
-      };
-      let firstDecade = decades[r];
-
-      // 2. Find out which tr the legend is in and get it
-      let legendRow;
-      if (firstDecade.querySelector('thead tr th') && firstDecade.querySelector('thead tr th').innerText === 'Year') {
-        legendRow = firstDecade.querySelector('thead tr');
-        console.log('legend located in head')
-      } else {
-        legendRow = firstDecade.querySelector('tbody tr');
-        console.log('legend located in body')
-      };
-
-      // 3. make an array of the headers and iterate through it
-      const headerArr = Array.from(legendRow.querySelectorAll('th'));
-      // select the array of headers that the current category could be under
-      let catArr = nomineesByCategory[category];
-
-      for(let i = 0; i < headerArr.length; i += 1) {
-        if (headerArr[i].innerText === 'Film' || headerArr[i].innerText === 'Winner') {
-          filmCol = i - 1;
-        } else if (catArr.includes(headerArr[i].innerText)) {
-          nomCol = i - 1;
+      // mouse over the user profile
+      
+      // if we don't have their name, see if it shows up now. If it doesn't, add the name as '?'
+      // generate&add a qId
+      // select & store their number of answers
+      // select & store their percent best answers
+      // select & store their level (if there is one)
+      // select & store their points
+      // iterate through the answers array
+      for (let i = 0; i < answers.length; i += 1) {
+        // check if this is the best answer. change answers[i] to 1 if it is
+        if (answers[i].querySelector('[class^="Answer__bestAnswerBadge"]')) {
+          output.answers[i].isBest = 1;
+          console.log('was best ', output.answers[i].isBest);
         }
+        // select & add what it says the date is
+        output.answers[i].dateText = answers[i].querySelector('[class^="Answer__subtitle__"]').innerText;
+        // select & add the text
+        output.answers[i].aText = answers[i].querySelector('[class^="ExpandableContent__content"] > p').innerText;
+        // select & add the user's name to both the answer & users[i]
+        const user = answers[i].querySelector('[class^="UserProfile__userName__"]').innerText;
+        // if the user's name is '?', leave it null
+        if (user !== '?' && user !== "Anonymous") {
+          output.users[i+1].uName = user;
+        }
+        // mouse over the user profile
+        // if we don't have their name, see if it shows up now. If it doesn't, add the name as '?'
+        // select & store their number of answers
+        // select & store thxeir percent best answers
+        // select & store their level (if there is one)
+        // select & store their points
+        // add the qId
       }
-
-      console.log('nom, film', nomCol, filmCol)
-
-      // loop through all tables
-      decades.forEach(decade => {
-        
-        // filter out the non-decade tables
-        let firstHeader = decade.querySelector('th');
-        if (!firstHeader) return;
-        if (firstHeader.innerText !== 'Year') return;
-
-        let year = null;
-
-        // select all of the rows in decade table
-        const rows = Array.from(decade.querySelectorAll('tbody tr'))
-
-        // loop through each row
-        rows.forEach(row => {
-
-          // select ALL inner text from the row. 
-          const rowText = row.innerText;
-
-          // instantiate record
-          const record = {
-            'AwardsShow': awardsShow,
-            'Year': year,
-            'Category': category,
-            'Subcategory': subcategory,
-            'Film': null,
-            'Nominee': null,
-            'Winner': 0,
-          };
-
-          // If row contains the year, update year field
-          if ((`${rowText[0]}${rowText[1]}` == '19' || `${rowText[0]}${rowText[1]}` == '20') && !(rowText[4] && rowText[4] === 's')) { 
-            year = rowText.slice(0, 4);
-            record['Year'] = year;
-          };
-
-          // Get array of all (non-year) columns in the row
-          let columns = Array.from(row.querySelectorAll('tr td'));
-
-          // Check if valid row
-          if (columns.length < 2) return;
-
-          // Initialize these variables. This will make sense below
-          let filmColText = null;
-          let nomColText = null;
-
-          // We need to do a check that this td is not a year
-          // If it is a year, the filmCol and nomCol will actually be one index up, 
-          // so we account for that by assigning them
-          let first2chars = columns[0].innerText.slice(0,2);
-          // If the film TITLE is a year, the last cnditional will fix that cause titles are in italics
-          if ((first2chars === '19' || first2chars === '20') && !columns[0].querySelector('td > i')) {
-              filmColText = columns[filmCol+1].innerText;
-              nomColText = columns[nomCol+1].innerText;
-              console.log('YEAR IS A TD');
-          };
-
-          // Get text for film and noms columns (if still null / unassigned)
-          if (!filmColText) filmColText = columns[filmCol].innerText;
-          if (!nomColText) nomColText = columns[nomCol].innerText;
-
-          // Check if winner (aka text is bold)
-          if (columns[0].querySelector('td > b') || columns[0].querySelector('td > i > b')) {
-            record['Winner'] = 1;
-          };
-
-          // Assign film field
-          record['Film'] = filmColText.replace(/'/g, "''");;
-
-          // Assign nominee field
-          let nominees = nomColText.split(/, and | and |, /);
-          nominees.forEach(nominee => {
-            record['Nominee'] = nominee.replace(/'/g, "''");
-            // shallow copy the object and push to array of records
-            const shallowCopy = JSON.parse(JSON.stringify(record));
-            rowList.push(shallowCopy);
-          });
-        });
-      });
-      return rowList;
-    }, awardsShow, category, subcategory);
-
-    browser.close();
+      return output;
+    }, url, output);
+    
+    console.log(output);
+    // browser.close();
 
     // Store output ((null, 2) argument is for readability purposes)
-    fs.writeFile(`outputs/${awardsShow}_${category}.json`, JSON.stringify(recordList, null, 2), err => {
+    fs.writeFile(`outputs/butthole.json`, JSON.stringify(output), err => {
       if(err) reject(err);
       else resolve('Saved Successfully!')
     });
@@ -152,7 +120,4 @@ const scrape = (awardsShow, category, url, subcategory = null) => {
 };
 
 // module.exports = scrape;
-// scrape('AMPAS', 'Director', 'https://en.wikipedia.org/wiki/Academy_Award_for_Best_Director')
-scrape('AMPAS', 'Picture', 'https://en.wikipedia.org/wiki/Academy_Award_for_Best_Picture')
-// scrape('AMPAS', 'Supporting Actress', 'https://en.wikipedia.org/wiki/Academy_Award_for_Best_Supporting_Actress');
-// scrape('PGA', 'Picture', 'https://en.wikipedia.org/wiki/Producers_Guild_of_America_Award_for_Best_Theatrical_Motion_Picture')
+scrape('https://answers.yahoo.com/question/index?qid=20070220122356AAhiuDH')
